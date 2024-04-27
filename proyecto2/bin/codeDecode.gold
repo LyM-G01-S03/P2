@@ -1,0 +1,14 @@
+//Alejandra Fruto Osorio y Daniel Vargas López
+//Códigos: 202311287 y 202123892]
+//Proyecto 2 lym
+using gold.**
+
+procedure main(args: String[]) begin
+  coder := code.createTransducer()
+  deCoder := decoder.createTransducer()
+
+  print("Input strings of the form: ")
+  print("w1!w2!w3!...!wn-1!wn# with n >= 2 and wi in ('a'..'d')")
+  print("Output strings: Decoded original strings")
+  Utilities.testCodeDecode(coder, deCoder)
+end

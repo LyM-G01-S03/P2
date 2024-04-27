@@ -1,0 +1,134 @@
+//Alejandra Fruto Osorio y Daniel Vargas López
+//Códigos: 202311287 y 202123892]
+//Proyecto 2 lym
+using gold.**
+using gold.structures.automaton.*
+using gold.visualization.automaton.*
+using gold.structures.set.*
+
+procedure main(args:String[]) begin
+	coder := createTransducer()
+
+	print ( "Input strings of the form: " )
+	print ( "w1!w2!w3!...!w𝑛−1!w𝑛# with n >= 2 and w𝑖 in ('a'..'d')" ) 
+	Utilities.test(coder)
+end
+
+function createTransducer():ITransducer begin
+	letras:= {'a', 'b', 'c', 'd'}
+	signos := {'*'}
+	contador := { 0 , 1 , 2 , 3 }
+	binario := { 0 , 1 } 
+	
+	Q := { 'I' , 'E' , 'F', 'R' } ∪ 
+		 { ⟨ x , y , z , m , n , 'v' , i , f, o ⟩ | x in letras , y in letras , z in letras , m in letras , n in letras ,   i in contador , f in binario, o in binario } ∪ 
+		 { ⟨ x , y , z , m , 'v' , 'v' , i , f, o ⟩ | x in letras , y in letras , z in letras , m in letras  , i in contador , f in binario, o in binario } ∪ 
+		 { ⟨ x , y , z , 'v' , 'v' , 'v' , i , f, o ⟩ | x in letras , y in letras , z in letras, i in contador , f in binario, o in binario } ∪ 
+		 { ⟨ x , y , 'v' , 'v' , 'v' , 'v' , i , f, o ⟩ | x in letras , y in letras , i in contador , f in binario, o in binario } ∪ 
+		 { ⟨ x , 'v' , 'v' , 'v' , 'v' , 'v' , i , f, o ⟩ | x in letras , i in contador , f in binario, o in binario } ∪ 
+		 { ⟨ x , y , z , m , n , p , i , f, o ⟩ | x in letras , y in letras , z in letras , m in letras , n in letras , p in letras,  i in contador , f in binario, o in binario }∪ 
+		 { ⟨ x , y , z , m , 'v' , 'v' , i , f, o ⟩ | x in letras , y in letras , z in letras , m in signos , n in signos , p in signos,  i in contador , f in binario, o in binario } 
+	
+	Output := { 'a' , 'b' , 'c' , 'd' , '!' , '#' } 
+	Σ := { 'a' , 'b' , 'c' , 'd' , '!' , '#', '*' } 	
+	q₀ := 'I' 
+	F := {'F'}
+
+	return GDeterministicTransducer ( Q , Σ , Output , q₀ , F , tr , g , escritura )
+end
+g( x ) := λ
+
+function tr (⟨ x , y , z , m , n , p , i , f, o ⟩ , entra ) begin
+	letras := { 'a' , 'b' , 'c' , 'd' }
+	signos :={'*'}
+	
+	if (p != 'v' or m= '*') and i = 3 and entra = '!' then
+		return 'R'
+	end
+	
+	if entra = '#' and o=1 then
+		if p != 'v' then
+			return 'F'
+		elseif i = 3 then
+			return 'F'
+		end
+	elseif x !='v'and  y!='v' and z!='v' and p ='v'and n='v' and m='v'and entra = '#' and i=3 and o=1 then 
+			return 'F'
+	elseif entra = '!' and i = 3 then
+		if m = 'v' then
+			return ⟨ x , y , z , 'v' , 'v', 'v' , 0 , 1, 1 ⟩
+		elseif m = '*' then
+			return ⟨ x , y , z , '*', 'v', 'v' , 0 , 1, 1 ⟩
+		elseif  p != 'v' then
+			return ⟨ x , y , z , m , n, p , 0 , 1, o ⟩
+		end
+	elseif y = 'v' and entra in letras then
+			return 	⟨ x , entra , 'v' , 'v' , 'v' , 'v' , 2 , f, o ⟩
+	elseif z = 'v'  and entra in letras  then
+		return ⟨ x , y , entra , 'v' , 'v' , 'v' , 3 , f , o⟩
+	elseif m = 'v' and entra in signos and x in letras and y in letras and z in letras then
+		return ⟨ x , y , z , entra , 'v' , 'v' , 3 , f, 1 ⟩
+	elseif m = 'v' and entra in letras  then
+		return ⟨ x , y , z , entra , 'v' , 'v' , 1 , f, o ⟩			
+	elseif n = 'v' and entra in letras and m!= '*' then
+		return ⟨ x , y , z , m , entra , 'v' , 2 , f, o ⟩
+	elseif p = 'v' and entra in letras and m!= '*' then
+		return ⟨ x , y , z , m , n , entra , 3 , f, o ⟩
+
+		
+	end
+	
+	return 'E'
+
+	
+end
+
+tr ( estado , entra ) begin
+	letras := { 'a' , 'b' , 'c' , 'd' }
+	
+	if estado = 'E' then
+		return 'E'
+	elseif estado = 'I' and entra in letras then
+		return ⟨ entra , 'v' , 'v' , 'v' , 'v' , 'v' , 1 , 0, 0 ⟩
+	elseif estado = 'R' and entra in letras then
+		return ⟨ entra , 'v' , 'v' , 'v' , 'v' , 'v' , 1 , 0, 1 ⟩
+	elseif estado = 'F' then
+		return estado
+	end
+	
+	return 'E'
+end
+
+function escritura ( estado, entra ) begin
+	if estado = 'I' then
+		return λ
+	elseif estado = 'E' then
+		return λ
+	elseif estado = 'F' then
+		return λ
+	elseif estado = 'R' then
+		return λ
+	end
+end
+
+escritura ( ⟨ x , y , z , m , n , p , i , f , o⟩, entra ) begin
+	
+	if m='*' and x != 'v' and y != 'v' and z != 'v' and n = 'v' and p = 'v' and entra ='!'  then
+			cadena1:String := Character.toString(x) + Character.toString(y) + Character.toString(z)
+			return cadena1 + Character.toString('!') + cadena1 + Character.toString(entra)
+		
+	elseif x != 'v' and y != 'v' and z != 'v' and m != 'v' and n != 'v' and p != 'v' and entra !='*' then
+		if m='*' then
+			cadena1:String := Character.toString(x) + Character.toString(y) + Character.toString(z)
+			return cadena1 + Character.toString('!') + cadena1 + Character.toString(entra)
+		else
+			cadena1:String := Character.toString(x) + Character.toString(y) + Character.toString(z) + Character.toString('!') + Character.toString(m) + Character.toString(n) + Character.toString(p) + Character.toString(entra)
+			return cadena1
+		end
+	elseif x != 'v' and y != 'v' and z != 'v' and m == 'v' and n == 'v' and p == 'v' and i=3 and entra = '#' then
+		cadena1 :String := Character.toString(x) + Character.toString(y) + Character.toString(z) + Character.toString(entra)
+		return cadena1
+	else
+		return ""
+	end
+end
